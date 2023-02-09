@@ -1,0 +1,6 @@
+[submodule "lib/MCP23017_WE"]
+	path = lib/MCP23017_WE
+	url = https://github.com/wollewald/MCP23017_WE
+[submodule "lib/ESP-Arduino-Lua"]
+	path = lib/ESP-Arduino-Lua
+	url = https://github.com/sfranzyshen/ESP-Arduino-Lua
