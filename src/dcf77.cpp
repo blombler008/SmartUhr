@@ -63,6 +63,10 @@ void DCF77::scanSignal(int signal) {
     timeCode += value;
  
     second++;
+    if(second > 59) {
+        second = 0;
+        addMinute(this);
+    }
     if(endDiff > 1700) {  
         finalizeBuffer(); 
     }   
