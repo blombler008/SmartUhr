@@ -64,7 +64,7 @@ void confgiureWiFi() {
     WiFi.persistent(false);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE); 
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  
-    if (!WiFi.setHostname("ESP-Cocktailmixer.local")) {
+    if (!WiFi.setHostname("ESP.local")) {
         Serial.println("Hostname failed to configure");
     } 
     connectToWifi(wifiFound);   
