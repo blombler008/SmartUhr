@@ -2,6 +2,8 @@
 #include <pins_arduino.h>
 #include "dcf77.hpp"
 #include "display.hpp" 
+#include "PrintHelper.hpp"
+
 
 // #include <MCP23017.h>
 #include <FreeRTOS.h>
@@ -35,10 +37,6 @@
 // dcf
 #define DCF77PIN 5 
 
-//  
-
-#define DEBUG
+//   
  
-#include "PrintHelper.hpp"
-
 #endif
