@@ -1,15 +1,16 @@
 #include "config.hpp"
 #include <esp_littlefs.h> 
+#include "main.hpp"
 //#include <LuaWrapper.h> 
-
+//
 // Adafruit_NeoPixel ledBuiltin(1, 48, NEO_GRB + NEO_KHZ800);
-  
-
+//
+//
 // bool invert = false; 
 // int period = 5;
 // double steps = ((.2)*(128+64))/period;
 // double estimatedSteps = (256+128)/steps;
-
+//
 // void set_led_builtin_color(int color) {
 //     ledBuiltin.setPixelColor(0, ledBuiltin.gamma32(ledBuiltin.ColorHSV(color)));
 //     ledBuiltin.show();
@@ -17,10 +18,6 @@
 
 
 int minute = 0, hour = 0;
-void confgiureWiFi();
-void connectToWifi(bool wifiFound);
-void configureDisplay();
-void configureLUA();
 
 Display disp;
 DCF77 dcf(DCF77PIN); 
@@ -32,6 +29,7 @@ void wifiTask(void* pvParameters) {
         vTaskDelay(20);
     }
 }
+
 void dcfTask(void* pvParameters) {
     while (1) { 
         dcf.check();
@@ -40,35 +38,39 @@ void dcfTask(void* pvParameters) {
 }
  
 void configureDisplay() {  
-    Serial.println("Configuring Display");
+    dprintln("------------------------------------"); 
+    dprintln("Configuring Display");
+    dprintln("------------------------------------"); 
     dcf.display = (Display*)&disp;
     disp.begin();
-    Serial.printf("Setting display i2c adress: 0x%X\n", DISPLAY_ADRESS);
-    xTaskCreate(dcfTask, "dcf", 4096, NULL, 1, &dcfHandle);
+    dprintf("Setting display i2c adress: 0x%X\n", DISPLAY_ADRESS);
+    xTaskCreate(dcfTask, "dcf", 4096, NULL, 1, &dcfHandle); 
 }
  
 void confgiureWiFi() {  
-    Serial.println("Configuring Wifi"); 
+    dprintln("------------------------------------"); 
+    dprintln("Configuring Wifi"); 
+    dprintln("------------------------------------"); 
     int n = WiFi.scanNetworks(false, true); 
     bool wifiFound = false;
-    Serial.println("Number of networks found: " + String(n));
+    dprintln("Number of networks found: " + String(n));
     for (int i = 0; i < n; i++) {
         String wifiName = WiFi.SSID(i);
-        Serial.println(" - SSID: " + wifiName); 
+        dprintln(" - SSID: " + wifiName); 
         if(wifiName == WIFI_SSID) {
             wifiFound = true;
         }
     }
-    Serial.println("------------------------------------"); 
+    dprintln("------------------------------------"); 
     WiFi.disconnect(true, true);
     WiFi.persistent(false);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE); 
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  
     if (!WiFi.setHostname("ESP.local")) {
-        Serial.println("Hostname failed to configure");
+        dprintln("Hostname failed to configure");
     } 
     connectToWifi(wifiFound);   
-    Serial.println("Hostname: " + String(WiFi.getHostname())); 
+    dprintln("Hostname: " + String(WiFi.getHostname())); 
     //xTaskCreatePinnedToCore(wifiTask, "wifi", 10000, NULL, 2, &wifiHandle, 1);
 }
 
@@ -102,43 +104,47 @@ void connectToWifi(bool wifiFound) {
     Serial.println("Access Point (AP) Mode"); 
 }
 
-void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
-    Serial.printf("Listing directory: %s\r\n", dirname);
+void listDir(fs::FS fs, const char * dirname, uint8_t levels){
+    dprintf("Listing directory: %s\r\n", dirname);
 
     File root = fs.open(dirname);
     if(!root){
-        Serial.println("- failed to open directory");
+        dprintln("- failed to open directory");
         return;
     }
     if(!root.isDirectory()){
-        Serial.println(" - not a directory");
+        dprintln(" - not a directory");
         return;
     }
 
     File file = root.openNextFile();
     while(file){
         if(file.isDirectory()){
-            Serial.print("  DIR : ");
-            Serial.println(file.name());
+            dprint("  DIR : ");
+            dprintln(file.name());
             if(levels){
                 listDir(fs, file.name(), levels -1);
             }
         } else {
-            Serial.print("  FILE: ");
-            Serial.print(file.name());
-            Serial.print("\tSIZE: ");
-            Serial.println(file.size());
+            dprint("  FILE: ");
+            dprint(file.name());
+            dprint("\tSIZE: ");
+            dprintln(file.size());
         }
         file = root.openNextFile();
     }
 }
 
-void configureLUA() {
+void configureFS() {
+    
+    dprintln("------------------------------------"); 
+    dprintln("Configuring Filesystem"); 
+    dprintln("------------------------------------"); 
     // esp_littlefs_format("spiffs");
     LittleFS.begin(false, "/littlefs", 10, "spiffs");
     bool mounted = esp_littlefs_mounted("spiffs"); 
     if(!mounted) return;
-    Serial.println("Filesystem Mounted!");
+    dprintln("Filesystem Mounted!");
     listDir(LittleFS, "/", 0);
     File f = LittleFS.open("/test.lua", "w");
     f.printf("test system\n");
@@ -146,25 +152,26 @@ void configureLUA() {
     f.close();
     f = LittleFS.open("/test.lua", "r"); 
     String data = f.readStringUntil('\n');
-    Serial.println("FILE: ");
-    Serial.print(" - Size: ");
-    Serial.println(f.size(), DEC);
-    Serial.print(" - Data: \"");
-    Serial.print(data);
-    Serial.println("\"");
+    dprintln("FILE: ");
+    dprint(" - Size: ");
+    dprintln(f.size());
+    dprint(" - Data: \"");
+    dprint(data);
+    dprintln("\"");
     f.close();
 }
 
-void setup() {    
-  
+void setup() {
+    
     Serial.begin(SERIAL_BAUD);
     Serial.println();
-    Serial.println("Starting Arduino");  
+    Serial.println("Starting ESP");  
     pinMode(DCF77PIN, INPUT); 
 
     confgiureWiFi();
     configureDisplay(); 
-    configureLUA();
+    configureFS();
+    dprintln("------------------------------------"); 
   // ledBuiltin.begin();
   // ledBuiltin.show();
   // ledBuiltin.setBrightness(100);

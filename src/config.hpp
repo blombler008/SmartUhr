@@ -1,6 +1,5 @@
 #include <Arduino.h>  
 #include <pins_arduino.h>
-#include "PrintHelper.hpp"
 #include "dcf77.hpp"
 #include "display.hpp" 
 
@@ -37,8 +36,9 @@
 #define DCF77PIN 5 
 
 //  
-#define DEBUG true
 
-
+#define DEBUG
+ 
+#include "PrintHelper.hpp"
 
 #endif

@@ -118,7 +118,7 @@ void printBits(uint64_t bits, int len) {
         }
         char bit = ((bits >> j) & 1) ? '1' : '0';  
         dprintf("%c", bit); 
-        #if DEBUG
+        #ifdef DEBUG
             fflush(stdout);
         #endif
     }
